@@ -8,6 +8,7 @@ Just drag the folder "KPRGeocoder" into your existing project and Link CoreLocat
 It's that easy.
 
 ## Usage
+Refer to example project for testing.
 
 To convert latitude and longitude to address
 ```swift
