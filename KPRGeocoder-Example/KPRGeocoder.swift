@@ -17,9 +17,16 @@ class KPRGeocoder: NSObject{
         
         let toConvert = CLLocation.init(latitude: latitude, longitude: longitude)
         CLGeocoder().reverseGeocodeLocation(toConvert, completionHandler: {(placemark, error) -> Void in
-            if error == nil{
-                completion(self.placemarkToAddress(placemark: (placemark?.first)!), nil)
+            
+            guard let _placemark:CLPlacemark = placemark?.first else {
+                completion(nil, error as NSError?)
+                return
             }
+            
+            if error == nil{
+                completion(self.placemarkToAddress(placemark: _placemark), nil)
+            }
+                
             else{
                 completion(nil, error as NSError?)
             }
@@ -53,10 +60,20 @@ class KPRGeocoder: NSObject{
             if error == nil{
                 self.addressToLatLong(address: toAddress, completion: {(secondCoordinate, error) -> Void in
                     if error == nil{
-                        let fromLocation = CLLocation(latitude: (firstCoordinate?.latitude)!, longitude: (firstCoordinate?.longitude)!)
-                        let toLocation = CLLocation(latitude: (secondCoordinate?.latitude)!, longitude: (secondCoordinate?.longitude)!)
-                        let distanceInMeter = Double(fromLocation.distance(from: toLocation))
-                        let distance = NSMeasurement(doubleValue: distanceInMeter, unit: UnitLength.meters)
+                        
+                        guard let fromLocationLat = firstCoordinate?.latitude,
+                              let fromLocationLong = firstCoordinate?.longitude,
+                              let toLocationLat = secondCoordinate?.latitude,
+                              let toLocationLong = secondCoordinate?.longitude
+
+                        else {
+                            completion(nil, error)
+                            return
+                        }
+                        
+                        let fromLocation = CLLocation(latitude: fromLocationLat, longitude: fromLocationLong)
+                        let toLocation = CLLocation(latitude: toLocationLat, longitude: toLocationLong)
+                        let distance = NSMeasurement(doubleValue: Double(fromLocation.distance(from: toLocation)), unit: UnitLength.meters)
                         let result = distance.converting(to: requestUnit)
                         
                         completion(result.value, nil)
